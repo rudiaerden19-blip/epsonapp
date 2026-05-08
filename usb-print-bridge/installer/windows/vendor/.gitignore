@@ -1,0 +1,4 @@
+# Gitignore: plaats hier ZELF je Epson-installer vóór je compileert (niet committen).
+*.exe
+*.msi
+*.zip
