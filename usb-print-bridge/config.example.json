@@ -2,5 +2,6 @@
   "listenHost": "127.0.0.1",
   "listenPort": 3001,
   "serialPath": "COM4",
-  "baudRate": 9600
+  "baudRate": 9600,
+  "windowsPrinterName": ""
 }

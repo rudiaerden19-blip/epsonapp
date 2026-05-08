@@ -1,46 +1,67 @@
 # USB print-bridge (Windows, Epson via USB)
 
-Lokale mini-server op **de kassa-PC**: luistert alleen op **`127.0.0.1:3001`** en stuurt bonnen naar een Epson bonprinter op een **COM-poort** (USB). Geen WiFi naar de printer nodig.
+Lokale mini-server op **de kassa-PC**: luistert alleen op **`127.0.0.1:3001`** en stuurt bonnen naar een Epson bonprinter op **USB**.
+
+**Twee manieren (allebei USB, geen netwerk naar de printer nodig):**
+
+1. **COM-poort** (`serialPath`) — als Epson een virtuele COM aanmaakt.  
+2. **Windows-printernaam** (`windowsPrinterName`) — als je **geen COM** hebt maar de printer **wél** in Windows staat en **testafdruk** werkt. De bridge stuurt dan **RAW ESC/POS** via de Windows-printwachtrij — nog steeds dezelfde USB-kabel.
 
 Zelfde HTTP-contract als Vysion Print / iPad-app:
 
 - `GET /status` → `{ "status": "online", ... }`
 - `POST /print` → JSON met `order`, `businessInfo`, `printType` (`customer` | `kitchen`)
 
-In het platform: bij printerinstellingen het adres **`127.0.0.1`** opslaan (poort **3001** is vast).
+In het platform: bij printerinstellingen **`127.0.0.1`** (poort **3001**).
 
-## Vereisten (per PC)
+## Vereisten
 
-1. **Windows** + **Node.js LTS** (https://nodejs.org) — tijdens installatie optie “Tools” aanvinken als `npm install` native modules niet bouwt.
-2. **Epson USB-driver** geïnstalleerd zodat de printer als **COM-poort** verschijnt (Apparaatbeheer → Poorten (COM & LPT)).
+1. **Windows** + **Node.js LTS** (https://nodejs.org).  
+2. Epson geïnstalleerd zodat **testafdruk** uit de utility **lukt**.
 
-## Installatie (map kopiëren)
+## Config (`config.json`)
 
-1. Kopieer de map **`usb-print-bridge`** naar de PC (bijv. `C:\Vysion\usb-print-bridge`).
-2. Dubbelklik **`start-bridge.bat`**  
-   - eerste keer: `npm install`  
-   - daarna start `server.mjs`
-3. Of handmatig in PowerShell/cmd:
+Kopieer `config.example.json` naar `config.json`.
 
-```bat
-cd C:\Vysion\usb-print-bridge
-npm install
-copy config.example.json config.json
-npm run ports
+### Optie A — COM
+
+```json
+{
+  "listenHost": "127.0.0.1",
+  "listenPort": 3001,
+  "serialPath": "COM4",
+  "baudRate": 9600,
+  "windowsPrinterName": ""
+}
 ```
 
-4. Open **`config.json`** en zet **`serialPath`** op je COM-poort (bijv. `"COM4"`).  
-   **`baudRate`**: meestal **9600** of **115200** (zie Epson-handleiding / driver).
+### Optie B — geen COM, wel printer in Windows (RAW)
 
-5. Start opnieuw met **`start-bridge.bat`** of `npm start`. Laat dit venster **open** tijdens het werk, of plan later een Windows-service (bv. met NSSM).
+Exacte naam uit **Instellingen → Printers en scanners**:
 
-## Veel PCs (50+)
+```json
+{
+  "listenHost": "127.0.0.1",
+  "listenPort": 3001,
+  "serialPath": "",
+  "baudRate": 9600,
+  "windowsPrinterName": "EPSON TM-T88V Receipt"
+}
+```
 
-- Dezelfde map op elke machine; alleen **`config.json`** kan verschillen (**COM-poort**).
-- Optioneel: elk een vaste map `C:\Vysion\usb-print-bridge` + snelkoppeling naar `start-bridge.bat` in Opstarten.
+Staan **beide** `serialPath` en `windowsPrinterName` op Windows ingevuld, dan wint **`windowsPrinterName`**.
+
+## Installatie
+
+1. Map **`usb-print-bridge`** op de PC zetten.  
+2. **`npm install`**  
+3. **`config.json`** invullen.  
+4. **`npm start`** of **`start-bridge.bat`** — venster open laten.
+
+**`npm run ports`** — alleen relevant bij COM-modus.
 
 ## Problemen
 
-- **Geen COM-poort**: driver/Epson Advanced Printer Driver voor TM-serie.
-- **`Access denied` op COM**: andere programma's sluiten die de printer gebruiken.
-- **`baudRate` verkeerd**: rare tekens → andere baudrate proberen.
+- **`OpenPrinter failed`**: naam klopt niet — exact overnemen uit Windows.  
+- **COM `Access denied`**: ander programma sluiten dat de poort gebruikt.  
+- **Vreemde tekens op bon**: driver/Epson-instelling of baudrate (COM-modus).
