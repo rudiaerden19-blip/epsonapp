@@ -1,0 +1,19 @@
+{
+  "name": "vysion-usb-print-bridge",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Lokale Windows-printserver (127.0.0.1:3001) → Epson bonprinter via USB-COM-poort",
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node server.mjs",
+    "ports": "node list-ports.mjs"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "iconv-lite": "^0.6.3",
+    "serialport": "^12.0.0"
+  }
+}
