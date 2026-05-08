@@ -101,6 +101,17 @@ function writeToPrinter(buffer) {
 }
 
 const app = express()
+// CORS: Ordervysion staat op HTTPS; status/print gaan vanuit de browser naar http://127.0.0.1:3001 (ander origin).
+// Zonder deze headers blokkeert de browser het antwoord → altijd «printer niet bereikbaar».
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(204)
+  }
+  next()
+})
 app.use(express.json({ limit: '512kb' }))
 
 app.get('/status', (_req, res) => {
